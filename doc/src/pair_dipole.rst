@@ -58,22 +58,26 @@ Examples
 
 .. code-block:: LAMMPS
 
-   pair_style lj/cut/dipole/cut 10.0
+   pair_style lj/cut/dipole/cut 2.5 5.0
    pair_coeff * * 1.0 1.0
-   pair_coeff 2 3 1.0 1.0 2.5 4.0
+   pair_coeff 2 3 0.8 1.0 2.5 4.0
 
    pair_style lj/sf/dipole/sf 9.0
    pair_coeff * * 1.0 1.0
    pair_coeff 2 3 1.0 1.0 2.5 4.0 scale 0.5
-   pair_coeff 2 3 1.0 1.0 2.5 4.0
+   pair_coeff 2 3 0.8 1.0 2.5 4.0
 
-   pair_style lj/cut/dipole/long 10.0
+   pair_style lj/cut/dipole/long 2.5 3.5
    pair_coeff * * 1.0 1.0
-   pair_coeff 2 3 1.0 1.0 2.5 4.0
+   pair_coeff 2 3 0.8 1.0 3.0
 
-   pair_style lj/long/dipole/long long long 3.5 10.0
+   pair_style lj/long/dipole/long long long 3.5
    pair_coeff * * 1.0 1.0
-   pair_coeff 2 3 1.0 1.0 2.5 4.0
+   pair_coeff 2 3 0.8 1.0
+
+   pair_style lj/long/dipole/long cut long 2.5 3.5
+   pair_coeff * * 1.0 1.0
+   pair_coeff 2 3 0.8 1.0 3.0
 
 Description
 """""""""""
@@ -249,28 +253,67 @@ Style *lj/long/dipole/long* has the same functionality as style
 *lj/cut/dipole/long*, except it also has an option to compute 12/6
 Lennard-Jones interactions for use with a long-range dispersion kspace
 style.  This is done by setting its *flag_lj* argument to *long*.  For
-long-range LJ interactions, the doc:`kspace_style ewald/disp
+long-range LJ interactions, the :doc:`kspace_style ewald/disp
 <kspace_style>` command must be used.
 
 ----------
 
-The following coefficients must be defined for each pair of atoms
-types via the :doc:`pair_coeff <pair_coeff>` command as in the examples
-above, or in the data file or restart files read by the
-:doc:`read_data <read_data>` or :doc:`read_restart <read_restart>`
-commands, or by mixing as described below:
+The following coefficients must be defined for each pair of atoms types
+via the :doc:`pair_coeff <pair_coeff>` command as in the examples above,
+or in the data file or restart files read by the :doc:`read_data
+<read_data>` or :doc:`read_restart <read_restart>` commands, or by
+mixing as described below:
 
 * :math:`\epsilon` (energy units)
 * :math:`\sigma` (distance units)
 * cutoff1 (distance units)
 * cutoff2 (distance units)
 
-The latter 2 coefficients are optional.  If not specified, the global
-LJ and Coulombic cutoffs specified in the pair_style command are used.
-If only one cutoff is specified, it is used as the cutoff for both LJ
-and Coulombic interactions for this type pair.  If both coefficients
-are specified, they are used as the LJ and Coulombic cutoffs for this
-type pair.
+The latter 2 coefficients are optional.  If not specified, the global LJ
+and Coulombic cutoffs specified in the pair_style command are used.  If
+only one cutoff is specified, it is used as the cutoff for both LJ and
+Coulombic interactions for this type pair.  If both coefficients are
+specified, they are used as the LJ and Coulombic cutoffs for this type
+pair.  When using a long-rang Coulomb solver, only a global Coulomb
+cutoff may be used and only the LJ cutoff may be changed with the
+:doc:`pair_coeff <pair_coeff>` command.  When using the
+*lj/long/dipole/long* pair style with *long* *long* setting, only a
+single global cutoff may be provided and no cutoff for the
+:doc:`pair_coeff <pair_coeff>` command.
+
+----------
+
+Note that for systems using these pair styles, typically particles
+should be able to exert torque on each other via their dipole moments
+so that the particle and its dipole moment can rotate.  This requires
+they not be point particles, but finite-size spheres.  Thus you should
+use a command like :doc:`atom_style hybrid sphere dipole <atom_style>`
+to use particles with both attributes.
+
+The magnitude and orientation of the dipole moment for each particle
+can be defined by the :doc:`set <set>` command or in the "Atoms"
+section of the data file read in by the :doc:`read_data <read_data>`
+command.
+
+Rotating finite-size particles have 6 degrees of freedom (DOFs),
+translation and rotational.  You can use the :doc:`compute temp/sphere
+<compute_temp_sphere>` command to monitor a temperature which includes
+all these DOFs.
+
+Finite-size particles with dipole moments should be integrated using
+one of these options:
+
+* :doc:`fix nve/sphere update dipole <fix_nve_sphere>`
+* :doc:`fix nve/sphere update dipole <fix_nve_sphere>` plus :doc:`fix langevin omega yes <fix_langevin>`
+* :doc:`fix nvt/sphere update dipole <fix_nvt_sphere>`
+* :doc:`fix npt/sphere update dipole <fix_npt_sphere>`
+
+In all cases the "update dipole" setting insures the dipole moments
+are also rotated when the finite-size spheres rotate.  The 2nd and 3rd
+bullets perform thermostatting; in the case of a Langevin thermostat
+the "omega yes" option also thermostats the rotational degrees of
+freedom (if desired).  The 4th bullet performs thermostatting and
+barostatting.
 
 ----------
 

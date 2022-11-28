@@ -2,7 +2,7 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+   LAMMPS development team: developers@lammps.org
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
@@ -782,6 +782,7 @@ Dump *Output::add_dump(int narg, char **arg)
   next_dump[idump] = 0;
 
   ndump++;
+  dump_list = std::vector<Dump *>(dump, dump + ndump);
   return dump[idump];
 }
 
@@ -795,12 +796,9 @@ void Output::modify_dump(int narg, char **arg)
 
   // find which dump it is
 
-  int idump;
-  for (idump = 0; idump < ndump; idump++)
-    if (strcmp(arg[0],dump[idump]->id) == 0) break;
-  if (idump == ndump) error->all(FLERR,"Could not find dump_modify ID: {}", arg[0]);
-
-  dump[idump]->modify_params(narg-1,&arg[1]);
+  auto idump = get_dump_by_id(arg[0]);
+  if (!idump) error->all(FLERR,"Could not find dump_modify ID: {}", arg[0]);
+  idump->modify_params(narg-1,&arg[1]);
 }
 
 /* ----------------------------------------------------------------------
@@ -832,21 +830,7 @@ void Output::delete_dump(const std::string &id)
     ivar_dump[i-1] = ivar_dump[i];
   }
   ndump--;
-}
-
-/* ----------------------------------------------------------------------
-   find a dump by ID
-   return index of dump or -1 if not found
-------------------------------------------------------------------------- */
-
-int Output::find_dump(const char *id)
-{
-  if (id == nullptr) return -1;
-  int idump;
-  for (idump = 0; idump < ndump; idump++)
-    if (strcmp(id,dump[idump]->id) == 0) break;
-  if (idump == ndump) return -1;
-  return idump;
+  dump_list = std::vector<Dump *>(dump, dump + ndump);
 }
 
 /* ----------------------------------------------------------------------
@@ -854,11 +838,21 @@ int Output::find_dump(const char *id)
    return pointer to dump
 ------------------------------------------------------------------------- */
 
-Dump *Output::get_dump_by_id(const std::string &id)
+Dump *Output::get_dump_by_id(const std::string &id) const
 {
   if (id.empty()) return nullptr;
   for (int idump = 0; idump < ndump; idump++) if (id == dump[idump]->id) return dump[idump];
   return nullptr;
+}
+
+/* ----------------------------------------------------------------------
+   return list of dumps as vector
+------------------------------------------------------------------------- */
+
+const std::vector<Dump *> &Output::get_dump_list()
+{
+  dump_list = std::vector<Dump *>(dump, dump + ndump);
+  return dump_list;
 }
 
 /* ----------------------------------------------------------------------

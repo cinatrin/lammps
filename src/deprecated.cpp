@@ -1,7 +1,7 @@
 /* ----------------------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+   LAMMPS development team: developers@lammps.org
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
@@ -31,6 +31,10 @@ void Deprecated::command(int narg, char **arg)
 
   if (cmd == "DEPRECATED") {
     if (lmp->comm->me == 0) utils::logmesg(lmp, "\nCommand 'DEPRECATED' is a dummy command\n\n");
+    return;
+  } else if (cmd == "box") {
+    if (lmp->comm->me == 0)
+      utils::logmesg(lmp, "\nThe 'box' command has been removed and will be ignored\n\n");
     return;
   } else if (cmd == "reset_ids") {
     if (lmp->comm->me == 0)

@@ -1,7 +1,7 @@
 /* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    https://www.lammps.org/, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+   LAMMPS development team: developers@lammps.org
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
@@ -152,7 +152,7 @@ class Variable : protected Pointers {
 
 class VarReader : protected Pointers {
  public:
-  class FixStore *fixstore;
+  class FixStorePeratom *fixstore;
   char *id_fix;
 
   VarReader(class LAMMPS *, char *, char *, int);
