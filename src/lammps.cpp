@@ -894,7 +894,6 @@ void LAMMPS::post_create()
   // do not re-issue package command if already issued
 
   if (suffix_enable) {
-    if (suffixp) suffix = suffixp;
 
     if (strcmp(suffix,"gpu") == 0 && !modify->check_package("GPU"))
       error->all(FLERR,"Using suffix gpu without GPU package installed");
@@ -921,7 +920,6 @@ void LAMMPS::post_create()
       if (strcmp(suffix2,"omp") == 0 && !(package_issued & Suffix::OMP))
         input->one("package omp 0");
     }
-    if (suffixp) suffix = nullptr;
   }
 }
 
